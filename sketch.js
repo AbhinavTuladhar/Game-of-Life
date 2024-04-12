@@ -13,16 +13,14 @@ let paused = true
  *
  * @param {number} row - The number of rows in the 2D array
  * @param {number} columns - The number of columns in the 2D array
- * @return {Array} A 2D array with the specified number of rows and columns
+ * @return {number[][]} A 2D array with the specified number of rows and columns
  */
-const make2DArray = (row, columns) => [...Array(row)].map(() => Array(columns))
+const make2DArray = (row, columns) =>
+  [...Array(row).fill(0)].map(() => Array(columns).fill(0))
 
 class GameOfLife {
   constructor() {
-    this.grid = new Array(COLS)
-    for (let i = 0; i < this.grid.length; i++) {
-      this.grid[i] = new Array(ROWS)
-    }
+    this.grid = make2DArray(COLS, ROWS)
 
     for (let i = 0; i < COLS; i++) {
       for (let j = 0; j < ROWS; j++) {
@@ -80,7 +78,21 @@ class GameOfLife {
     this.grid = newState
   }
 
+  drawGridLines() {
+    stroke(50)
+    strokeWeight(1)
+    for (let i = 0; i < COLS; i++) {
+      const x = i * BOX_SIZE
+      line(x, 0, x, HEIGHT)
+    }
+    for (let i = 0; i < ROWS; i++) {
+      const y = i * BOX_SIZE
+      line(0, y, WIDTH, y)
+    }
+  }
+
   drawGrid() {
+    this.drawGridLines()
     for (let i = 0; i < COLS; i++) {
       for (let j = 0; j < ROWS; j++) {
         if (this.grid[i][j] === 1) {
@@ -96,23 +108,33 @@ class GameOfLife {
 
 /**
  * Pause the simulation if the `p` key is pressed
+ * Make everything black if 'r' is pressed
  */
 function keyPressed() {
   if (keyCode === 80) {
     paused = !paused
+  } else if (keyCode === 82) {
+    game.grid = make2DArray(COLS, ROWS)
   }
+}
+
+function mousePressed() {
+  const clickedRow = Math.floor(mouseY / BOX_SIZE)
+  const clickedCol = Math.floor(mouseX / BOX_SIZE)
+  const selectedCell = game.grid[clickedCol][clickedRow]
+  game.grid[clickedCol][clickedRow] = selectedCell === 0 ? 1 : 0
 }
 
 function setup() {
   createCanvas(WIDTH, HEIGHT)
-  frameRate(60)
+  frameRate(10)
   game = new GameOfLife()
 }
 
 function draw() {
   background(0)
   game.drawGrid()
-  if (paused) {
+  if (!paused) {
     game.updateGrid()
   }
 }
