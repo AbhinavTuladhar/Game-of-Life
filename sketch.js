@@ -1,11 +1,12 @@
 const WIDTH = window.innerWidth
 const HEIGHT = window.innerHeight
-const BOX_SIZE = 15
+const BOX_SIZE = 12.5
 
 const ROWS = Math.floor(HEIGHT / BOX_SIZE)
 const COLS = Math.floor(WIDTH / BOX_SIZE)
 
 let game
+let paused = true
 
 /**
  * Generates a 2D array with the specified number of rows and columns.
@@ -42,11 +43,41 @@ class GameOfLife {
     for (let i = -1; i <= 1; i++) {
       for (let j = -1; j <= 1; j++) {
         let col = (x + i + COLS) % COLS
-        let row = (y + i + ROWS) % ROWS
+        let row = (y + j + ROWS) % ROWS
         count += this.grid[col][row]
       }
     }
+    // Don't count the cell itself
+    count -= this.grid[x][y]
     return count
+  }
+
+  /**
+   * A function that updates the grid based on the number of neighbors.
+   */
+  updateGrid() {
+    const newState = make2DArray(COLS, ROWS)
+    for (let col = 0; col < COLS; col++) {
+      for (let row = 0; row < ROWS; row++) {
+        const cell = this.grid[col][row]
+        const neighbours = this.countNeighbours(col, row)
+
+        /**
+         * Rules for the game of life
+         * 1. Any live cell with less than 2 neighbours dies.
+         * 2. Any live cell with more than 3 neighbours dies.
+         * 3. Any dead cell with exactly three neighbours becomes alive.
+         */
+        if (cell === 0 && neighbours === 3) {
+          newState[col][row] = 1
+        } else if (cell === 1 && (neighbours < 2 || neighbours > 3)) {
+          newState[col][row] = 0
+        } else {
+          newState[col][row] = cell
+        }
+      }
+    }
+    this.grid = newState
   }
 
   drawGrid() {
@@ -63,13 +94,25 @@ class GameOfLife {
   }
 }
 
+/**
+ * Pause the simulation if the `p` key is pressed
+ */
+function keyPressed() {
+  if (keyCode === 80) {
+    paused = !paused
+  }
+}
+
 function setup() {
   createCanvas(WIDTH, HEIGHT)
-  frameRate(20)
+  frameRate(60)
   game = new GameOfLife()
 }
 
 function draw() {
   background(0)
   game.drawGrid()
+  if (paused) {
+    game.updateGrid()
+  }
 }
