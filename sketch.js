@@ -30,6 +30,25 @@ class GameOfLife {
     }
   }
 
+  /**
+   * A function that counts the number of neighbors for a given cell position.
+   *
+   * @param {number} x - the x-coordinate of the cell position
+   * @param {number} y - the y-coordinate of the cell position
+   * @return {number} the total number of neighbours for the cell position
+   */
+  countNeighbours(x, y) {
+    let count = 0
+    for (let i = -1; i <= 1; i++) {
+      for (let j = -1; j <= 1; j++) {
+        let col = (x + i + COLS) % COLS
+        let row = (y + i + ROWS) % ROWS
+        count += this.grid[col][row]
+      }
+    }
+    return count
+  }
+
   drawGrid() {
     for (let i = 0; i < COLS; i++) {
       for (let j = 0; j < ROWS; j++) {
